@@ -10,6 +10,18 @@ public class PlayerController : MonoBehaviour
     public TMP_Text timerTxt;
     public float timer;
 
+    [Header("Health")]
+
+    public int maxHealth;
+
+    public int currentHealth;
+
+    [Header("Shooting")]
+
+    public Transform shootingPoints;
+    public GameObject bullet;
+    bool isFacingRight;
+
     [Header("Main")]
     public float moveSpeed;
     public float jumpForce;
@@ -26,6 +38,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         startPos = transform.position;
+
+        currentHealth = maxHealth;
+        isFacingRight = true;
     }
 
     // Update is called once per frame
@@ -35,6 +50,8 @@ public class PlayerController : MonoBehaviour
         timerTxt.text = timer.ToString("F2");
         
         Movement();
+        Health();
+        Shoot();
     }
 
     void Movement()
@@ -54,6 +71,40 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void Shoot()
+    {
+        if (Input.GetKeyDown(KeyCode.X))
+        {
+            Instantiate(bullet, shootingPoints.position, shootingPoints.rotation);
+        }
+    }
+
+    void MovementDirection()
+    {
+        if (isFacingRight && inputs < -.1f)
+        {
+            Flip();
+        }
+        else if (!isFacingRight && inputs > .1f)
+        {
+            Flip();
+        }
+    }
+
+    void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        transform.Rotate(0f, 180f, 0f);
+    }
+
+    void Health()
+    {
+        if (currentHealth <=0)
+        {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
+        }
+    }
+
     private void OnTriggerEnter2D(Collider2D other) 
     {
         if (other.gameObject.CompareTag("Hazard"))
@@ -63,6 +114,11 @@ public class PlayerController : MonoBehaviour
         if (other.gameObject.CompareTag("Exit"))
         {
             SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        }        
+        if (other.gameObject.CompareTag("Enemy"))
+        {
+            currentHealth--;
+            Destroy(other.gameObject);
         }
     }
 }
